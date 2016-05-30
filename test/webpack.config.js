@@ -3,10 +3,15 @@ var path = require('path');
 var webpack = require('webpack');
 
 var commonLoaders = [
-  {test: /.*\.(gif|png|jpe?g|svg)$/i, loaders: [
-    'file?hash=sha512&digest=hex&name=[hash].[ext]',
-    '../index.js?{progressive:true,optimizationLevel:7,interlaced:false}']},
+  {
+    test: /.*\.(gif|png|jpe?g|svg)$/i,
+    loaders: [
+      'file?hash=sha512&digest=hex&name=[hash].[ext]',
+      '../index.js?{progressive:true,optimizationLevel:7,interlaced:false,cachePath:".cache"}',
+    ],
+  },
 ];
+
 var assetsPath = path.join(__dirname, 'public/assets');
 var publicPath = 'assets/';
 var extensions = ['', '.js', '.jsx', '.styl'];
@@ -28,7 +33,7 @@ module.exports = [
     },
     imageWebpackLoader: {
       pngquant:{
-        quality: "65-90",
+        quality: '65-90',
         speed: 4
       },
       svgo:{
