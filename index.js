@@ -40,38 +40,54 @@ module.exports = function(content) {
 
   var shouldProceedImagePromise = Q.defer();
 
-  // check for cached images
-  Q.all([
 
-    // check is cache exists
-    cache.has(cacheKey), cache.has(cacheKey + 'checksum'),
-  ]).then(function(results) {
+    // if cache enabled
+    if (options.cache) {
+    console.log('check cache', originalFilename);
 
-    // if cache is not found
-    if (!results[0] || !results[1]) {
-      shouldProceedImagePromise.resolve();
-      return;
-    }
+    // check for cached images
+    Q.all([
 
-    // check is cache up to date
-    cache.get(cacheKey + 'checksum').then(function(cacheEntry) {
+      // check is cache exists
+      cache.has(cacheKey), cache.has(cacheKey + 'checksum'),
+    ]).then(function(results) {
 
-      // if file not changed, return cached value
-      if (cacheEntry.value === fileHash) {
-        cache.get(cacheKey).then(function(cacheEntry) {
-          shouldProceedImagePromise.reject();
-          return callback(null, cacheEntry.value);
-        });
-
-      // cache is outdated, create new image
-      } else {
+      // if cache is not found
+      if (!results[0] || !results[1]) {
+        console.log('cache not exists', originalFilename);
         shouldProceedImagePromise.resolve();
+        return;
       }
 
+
+      // check is cache up to date
+      cache.get(cacheKey + 'checksum').then(function(cacheEntry) {
+        console.log('checksum validation', originalFilename);
+
+        // if file not changed, return cached value
+        if (cacheEntry.value === fileHash) {
+          console.log('get from cache', originalFilename);
+          cache.get(cacheKey).then(function(cacheEntry) {
+            shouldProceedImagePromise.reject();
+            return callback(null, cacheEntry.value);
+          });
+
+        // cache is outdated, create new image
+        } else {
+          console.log('cache outdated', originalFilename);
+          shouldProceedImagePromise.resolve();
+        }
+
+      });
+
     });
-  });
+  // if cache disabled
+  } else {
+    shouldProceedImagePromise.resolve();
+  }
 
   shouldProceedImagePromise.promise.then(function() {
+    console.log('proceed image', originalFilename);
 
     var imagemin = new Imagemin()
     .src(content)
