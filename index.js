@@ -58,18 +58,21 @@ module.exports = function(content) {
         shouldProceedImagePromise.resolve();
         return;
       }
+      console.log('cache exists', originalFilename);
 
 
       // check is cache up to date
       cache.get(cacheKey + 'checksum').then(function(cacheEntry) {
-        console.log('checksum validation', originalFilename);
 
         // if file not changed, return cached value
         if (cacheEntry.value === fileHash) {
-          console.log('get from cache', originalFilename);
+          console.log('cache is valid', originalFilename);
           cache.get(cacheKey).then(function(cacheEntry) {
+            console.log('RETUN FROM CACHE', originalFilename);
+            console.log(cacheEntry.key);
             shouldProceedImagePromise.reject();
-            return callback(null, cacheEntry.value);
+
+            return callback(null, new Buffer(cacheEntry.value, 'binary'));
           });
 
         // cache is outdated, create new image
@@ -122,9 +125,8 @@ module.exports = function(content) {
 
       // if image properly optimized
       } else {
-
         if (options.cache) {
-          cache.set(cacheKey, files[0].contents);
+          cache.set(cacheKey, files[0].contents.toString('binary'));
           cache.set(cacheKey + 'checksum', fileHash);
         }
 
