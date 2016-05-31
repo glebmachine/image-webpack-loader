@@ -2,7 +2,7 @@ var Imagemin = require('imagemin');
 var imageminPngquant = require('imagemin-pngquant');
 var loaderUtils = require('loader-utils');
 var crypto = require('crypto');
-var Q = require('Q');
+var Q = require('q');
 
 // os cache utils
 var Cache = require('async-disk-cache');
