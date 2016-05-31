@@ -43,7 +43,6 @@ module.exports = function(content) {
 
     // if cache enabled
     if (options.cache) {
-    console.log('check cache', originalFilename);
 
     // check for cached images
     Q.all([
@@ -54,11 +53,9 @@ module.exports = function(content) {
 
       // if cache is not found
       if (!results[0] || !results[1]) {
-        console.log('cache not exists', originalFilename);
         shouldProceedImagePromise.resolve();
         return;
       }
-      console.log('cache exists', originalFilename);
 
 
       // check is cache up to date
@@ -66,10 +63,7 @@ module.exports = function(content) {
 
         // if file not changed, return cached value
         if (cacheEntry.value === fileHash) {
-          console.log('cache is valid', originalFilename);
           cache.get(cacheKey).then(function(cacheEntry) {
-            console.log('RETUN FROM CACHE', originalFilename);
-            console.log(cacheEntry.key);
             shouldProceedImagePromise.reject();
 
             return callback(null, new Buffer(cacheEntry.value, 'binary'));
@@ -77,7 +71,6 @@ module.exports = function(content) {
 
         // cache is outdated, create new image
         } else {
-          console.log('cache outdated', originalFilename);
           shouldProceedImagePromise.resolve();
         }
 
@@ -90,7 +83,6 @@ module.exports = function(content) {
   }
 
   shouldProceedImagePromise.promise.then(function() {
-    console.log('proceed image', originalFilename);
 
     var imagemin = new Imagemin()
     .src(content)
