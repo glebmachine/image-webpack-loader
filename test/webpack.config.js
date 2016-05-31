@@ -7,7 +7,7 @@ var commonLoaders = [
     test: /.*\.(gif|png|jpe?g|svg)$/i,
     loaders: [
       'file?hash=sha512&digest=hex&name=[hash].[ext]',
-      '../index.js?{progressive:true,optimizationLevel:7,interlaced:false,cachePath:".cache"}',
+      '../index.js?{progressive:true,optimizationLevel:7,interlaced:false,cache:true}',
     ],
   },
 ];

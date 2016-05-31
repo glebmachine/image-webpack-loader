@@ -2,8 +2,11 @@ var Imagemin = require('imagemin');
 var imageminPngquant = require('imagemin-pngquant');
 var loaderUtils = require('loader-utils');
 var crypto = require('crypto');
-var path = require('path');
-var fs = require('fs');
+var Q = require('Q');
+
+// os cache utils
+var Cache = require('async-disk-cache');
+var cache = new Cache('image-webpack-loader');
 
 function getHashOf(value) {
   var hash = crypto.createHash('sha256');
@@ -22,42 +25,61 @@ module.exports = function(content) {
     bypassOnDebug: config.bypassOnDebug || false,
     pngquant: config.pngquant || false,
     svgo: config.svgo || {},
-    cachePath: config.cachePath || false,
+    cache: config.cache || false,
   };
 
   var callback = this.async(), called = false;
-
-  var cacheDir = path.resolve(process.cwd(), options.cachePath);
   var originalFilename = this.request.split('!').pop();
-
-  var tmpName = getHashOf(originalFilename);
+  var cacheKey = getHashOf(originalFilename);
   var fileHash = getHashOf(content);
-  var prevFileHash = false;
-  if (fs.existsSync(path.resolve(cacheDir, tmpName+'-checksum'))) {
-    prevFileHash = fs.readFileSync(path.resolve(cacheDir, tmpName+'-checksum')).toString();
-  }
-
-  console.log({
-    cacheDir, tmpName,
-    fileHash, prevFileHash,
-  });
-
-  // if file not changed, returns previously saved results
-  if (fileHash === prevFileHash) {
-    return callback(null, fs.readFileSync(path.resolve(cacheDir, tmpName)));
-  }
 
   if (this.debug === true && options.bypassOnDebug === true) {
     // Bypass processing while on watch mode
     return callback(null, content);
-  } else {
+  }
+
+  var shouldProceedImagePromise = Q.defer();
+
+  // check for cached images
+  Q.all([
+
+    // check is cache exists
+    cache.has(cacheKey), cache.has(cacheKey + 'checksum'),
+  ]).then(function(results) {
+
+    // if cache is not found
+    if (!results[0] || !results[1]) {
+      shouldProceedImagePromise.resolve();
+      return;
+    }
+
+    // check is cache up to date
+    cache.get(cacheKey + 'checksum').then(function(cacheEntry) {
+
+      // if file not changed, return cached value
+      if (cacheEntry.value === fileHash) {
+        cache.get(cacheKey).then(function(cacheEntry) {
+          shouldProceedImagePromise.reject();
+          return callback(null, cacheEntry.value);
+        });
+
+      // cache is outdated, create new image
+      } else {
+        shouldProceedImagePromise.resolve();
+      }
+
+    });
+  });
+
+  shouldProceedImagePromise.promise.then(function() {
+
     var imagemin = new Imagemin()
     .src(content)
     .use(Imagemin.gifsicle({
-      interlaced: options.interlaced
+      interlaced: options.interlaced,
     }))
     .use(Imagemin.jpegtran({
-      progressive: options.progressive
+      progressive: options.progressive,
     }))
     .use(Imagemin.svgo(options.svgo));
 
@@ -65,7 +87,7 @@ module.exports = function(content) {
       imagemin.use(imageminPngquant(options.pngquant));
     } else {
       imagemin.use(Imagemin.optipng({
-        optimizationLevel: options.optimizationLevel
+        optimizationLevel: options.optimizationLevel,
       }));
     }
 
@@ -85,26 +107,16 @@ module.exports = function(content) {
       // if image properly optimized
       } else {
 
-        if (options.cachePath) {
-          if (!fs.existsSync(cacheDir)){
-            fs.mkdirSync(cacheDir);
-          }
-
-          // store cached file
-          fs.writeFileSync(
-            path.resolve(cacheDir, tmpName),
-            files[0].contents);
-
-          // store checksum for hash
-          fs.writeFileSync(
-            path.resolve(cacheDir, tmpName+'-checksum'),
-            fileHash);
+        if (options.cache) {
+          cache.set(cacheKey, files[0].contents);
+          cache.set(cacheKey + 'checksum', fileHash);
         }
 
         callback(null, files[0].contents);
       }
     });
-  }
+
+  });
 };
 
 module.exports.raw = true;
