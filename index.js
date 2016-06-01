@@ -66,7 +66,7 @@ module.exports = function(content) {
           cache.get(cacheKey).then(function(cacheEntry) {
             shouldProceedImagePromise.reject();
 
-            return callback(null, new Buffer(cacheEntry.value, 'binary'));
+            return callback(null, cacheEntry.value);
           });
 
         // cache is outdated, create new image
@@ -118,7 +118,7 @@ module.exports = function(content) {
       // if image properly optimized
       } else {
         if (options.cache) {
-          cache.set(cacheKey, files[0].contents.toString('binary'));
+          cache.set(cacheKey, files[0].contents);
           cache.set(cacheKey + 'checksum', fileHash);
         }
 
