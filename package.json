@@ -17,7 +17,6 @@
     "url": "git@github.com:tcoopman/image-webpack-loader.git"
   },
   "dependencies": {
-    "Q": "0.0.1",
     "async-disk-cache": "1.0.3",
     "crypto": "0.0.3",
     "file-loader": "0.8.5",
