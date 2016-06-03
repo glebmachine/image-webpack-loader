@@ -6,7 +6,7 @@ var Q = require('q');
 
 // os cache utils
 var Cache = require('async-disk-cache');
-var cache = new Cache('image-webpack-loader');
+var cache = new Cache('image-webpack-loader', { supportBuffer : true });
 
 function getHashOf(value) {
   var hash = crypto.createHash('sha256');
