@@ -20,9 +20,9 @@
     "async-disk-cache": "git://github.com/glebmachine/async-disk-cache.git#e0928ddb40c61edff15b5797169750a5272cd709",
     "crypto": "0.0.3",
     "file-loader": "0.8.5",
-    "imagemin-pngquant": "^4.2.0",
+    "imagemin-pngquant": "^5.0.0",
     "loader-utils": "^0.2.14",
-    "imagemin": "^4.0.0",
+    "imagemin": "^5.2.1",
     "q": "1.4.1"
   },
   "devDependencies": {
