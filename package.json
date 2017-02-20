@@ -21,7 +21,7 @@
     "crypto": "0.0.3",
     "file-loader": "0.8.5",
     "imagemin-pngquant": "^4.2.0",
-    "loader-utils": "^0.2.14",
+    "loader-utils": "^0.2.17",
     "imagemin": "^4.0.0",
     "q": "1.4.1"
   },
