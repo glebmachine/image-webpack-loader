@@ -23,7 +23,7 @@
     "imagemin-pngquant": "^4.2.0",
     "loader-utils": "^0.2.14",
     "imagemin": "^4.0.0",
-    "q": "1.4.1"
+    "q": "1.5.0"
   },
   "devDependencies": {
     "webpack": "^1.12.11"
